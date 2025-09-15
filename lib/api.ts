@@ -2,14 +2,20 @@ import axios from "axios";
 import { Note } from "@/types/note";
 
 const API_BASE = "https://notehub-public.goit.study/api";
-const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
-console.log("TOKEN:", process.env.NEXT_PUBLIC_NOTEHUB_TOKEN);
+
 const api = axios.create({
   baseURL: API_BASE,
   headers: {
-    Authorization: `Bearer ${TOKEN}`,
     "Content-Type": "application/json",
   },
+});
+
+api.interceptors.request.use((config) => {
+  const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export interface NotesResponse {
@@ -31,7 +37,7 @@ export async function fetchNotes(
     ...data,
     notes: data.notes.map((note) => ({
       ...note,
-      id: String(note.id), 
+      id: String(note.id),
     })),
   };
 }
@@ -41,15 +47,20 @@ export async function fetchNoteById(id: string): Promise<Note> {
   return { ...data, id: String(data.id) };
 }
 
-
-export async function createNote(note: { title: string; content: string; tag: string }): Promise<Note> {
-    const { data } = await api.post("/notes", note);
-    return { ...data, id: String(data.id) };
-  }
+export async function createNote(note: {
+  title: string;
+  content: string;
+  tag: string;
+}): Promise<Note> {
+    const payload = {
+        title: note.title,
+        content: note.content,
+        tags: note.tag ? [note.tag] : [],
+    };
+  const { data } = await api.post("/notes", payload);
+  return { ...data, id: String(data.id) };
+}
 
 export async function deleteNote(id: string): Promise<void> {
-  const { status } = await api.delete(`/notes/${id}`);
-  if (status !== 200) {
-    throw new Error("Failed to delete note");
-  }
+  await api.delete(`/notes/${id}`);
 }
