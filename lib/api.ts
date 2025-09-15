@@ -47,18 +47,9 @@ export async function fetchNoteById(id: string): Promise<Note> {
   return { ...data, id: String(data.id) };
 }
 
-export async function createNote(note: {
-  title: string;
-  content: string;
-  tag: string;
-}): Promise<Note> {
-    const payload = {
-        title: note.title,
-        content: note.content,
-        tags: note.tag ? [note.tag] : [],
-    };
-  const { data } = await api.post("/notes", payload);
-  return { ...data, id: String(data.id) };
+export async function createNote(note: { title: string; content: string; tags: string[] }): Promise<Note> {
+    const { data } = await api.post("/notes", { ...note, tag: note.tags });
+    return { ...data, id: String(data.id) };
 }
 
 export async function deleteNote(id: string): Promise<void> {
