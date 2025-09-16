@@ -4,76 +4,64 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchNotes, NotesResponse } from "@/lib/api";
 import NoteList from "@/components/NoteList/NoteList";
-import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
-import Loader from "@/components/Loader/Loader";
-import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
-import { useDebounce } from "use-debounce";
-import ReactPaginate from "react-paginate";
-
+import Pagination from "@/components/Pagination/Pagination";
+import Modal from "@/components/Modal/Modal";
 import css from "./NotesPage.module.css";
-import paginationCss from "@/components/Pagination/Pagination.module.css";
 
-export default function NotesClient() {
+export default function NotesClient({
+    initialPage = 1,
+    initialQuery = "",
+}: {
+    initialPage?: number;
+    initialQuery?: string;
+}) {
     const queryClient = useQueryClient();
+    const [isOpen, setIsOpen] = useState(false);
+    const [page, setPage] = useState(initialPage);
+    const [search, setSearch] = useState(initialQuery);
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [page, setPage] = useState(1);
-    const [search, setSearch] = useState("");
-    const [debouncedSearch] = useDebounce(search, 500);
-
-    const { data, isLoading, isError, error } = useQuery<NotesResponse, Error>({
-        queryKey: ["notes", page, debouncedSearch],
-        queryFn: () => fetchNotes(page, debouncedSearch),
+    const { data, isLoading, isError } = useQuery<NotesResponse, Error>({
+        queryKey: ["notes", page, search],
+        queryFn: () => fetchNotes(page, search),
+        placeholderData: (prev) => prev,
     });
 
-    const notes = data?.notes ?? [];
-
-    const handlePageChange = (selectedItem: { selected: number }) => {
-        setPage(selectedItem.selected + 1);
-    };
-
     return (
-        <div className={css.container}>
+        <div className={css.app}>
             <div className={css.toolbar}>
                 <input
-                    type="text"
-                    placeholder="Search notes"
                     className={css.input}
+                    placeholder="Search"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <button className={css.button} onClick={() => setIsModalOpen(true)}>
+                <button className={css.button} onClick={() => setIsOpen(true)}>
                     Create note +
                 </button>
             </div>
 
-            {isLoading && <Loader />}
-            {isError && (
-                <ErrorMessage message={error?.message || "Something went wrong."} />
-            )}
+            {isLoading && <p>Loading...</p>}
+            {isError && <p>Error loading notes</p>}
 
-            {!isLoading && !isError && notes.length === 0 && <p>No notes found.</p>}
+            {data && data.notes && <NoteList notes={data.notes} />}
 
-            {notes.length > 0 && <NoteList notes={notes} />}
-
-            {data?.totalPages && data.totalPages > 1 && (
-                <ReactPaginate
-                    pageCount={data.totalPages}
-                    onPageChange={handlePageChange}
-                    containerClassName={paginationCss.pagination}
-                    activeClassName={paginationCss.active}
-                    previousLabel="<"
-                    nextLabel=">"
+            {data && (
+                <Pagination
+                    page={page}
+                    totalPages={data.totalPages}
+                    onPageChange={(newPage) => setPage(newPage)}
                 />
             )}
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+
+            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
                 <NoteForm
-                    onClose={() => setIsModalOpen(false)}
-                    onSuccess={async () =>
-                        queryClient.invalidateQueries({ queryKey: ["notes"] })
-                    }
+                    onClose={() => setIsOpen(false)}
+                    onSuccess={() => {
+                        queryClient.invalidateQueries({ queryKey: ["notes"] });
+                        setIsOpen(false);
+                    }}
                 />
             </Modal>
         </div>
