@@ -6,9 +6,8 @@ export interface Note {
     createdAt: string;
     updatedAt: string;
   }
-export interface NotesResponse {
-    notes: Note[];
-    page: number;
-    totalPages: number;
-    totalNotes: number;
+export interface CreateNoteDTO{
+  title: string;
+  content: string;
+  tag: string;
 }

@@ -17,16 +17,19 @@ export default function NoteDetailsClient({ noteId }: NoteDetailsClientProps) {
   } = useQuery<Note, Error>({
     queryKey: ["note", noteId],
     queryFn: () => fetchNoteById(noteId),
+    refetchOnMount: false,
+    retry: false,
   });
 
   if (isLoading) return <p>Loading note...</p>;
-  if (isError || !note) return <p>Error loading note: {error?.message}</p>;
-
+  if (isError) return <p>Error loading note: {error?.message}</p>;
+  if (!note) return <p>Note not found</p>;
   return (
     <div>
       <h2>{note.title}</h2>
       <p>{note.content}</p>
       <small>Created at: {new Date(note.createdAt).toLocaleString()}</small>
+      <p>Tag: {note.tag}</p>
     </div>
   );
 }

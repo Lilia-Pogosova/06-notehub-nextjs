@@ -16,8 +16,20 @@ export default function Modal({ children, isOpen, onClose }: ModalProps) {
             if (e.key === "Escape") onClose();
         };
         document.addEventListener("keydown", handleEsc);
+
         return () => document.removeEventListener("keydown", handleEsc);
     }, [onClose]);
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -28,10 +40,7 @@ export default function Modal({ children, isOpen, onClose }: ModalProps) {
             role="dialog"
             aria-modal="true"
         >
-            <div
-                className={css.modal}
-                onClick={(e) => e.stopPropagation()} 
-            >
+            <div className={css.modal} onClick={(e) => e.stopPropagation()}>
                 {children}
             </div>
         </div>,
