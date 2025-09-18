@@ -10,7 +10,7 @@ interface NoteDetailsPageProps {
 export default async function NoteDetailsPage({
   params,
 }: NoteDetailsPageProps) {
-  const { id } = await params; 
+  const { id } = await params;
 
   if (!id) {
     throw new Error("Note id is missing");
