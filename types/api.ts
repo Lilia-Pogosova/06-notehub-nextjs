@@ -1,8 +1,7 @@
 import { Note } from "./note";
 
-export interface SingleNoteResponse{
-    note: Note;
-}
+export type SingleNoteResponse = {note:Note};
+
 
 export interface NotesResponse {
     notes: Note[];

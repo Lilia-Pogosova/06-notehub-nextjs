@@ -49,11 +49,11 @@ export async function fetchNotes(
 }
 
 export async function fetchNoteById(id: string): Promise<Note> {
-    const { data } = await api.get<Note>(`/notes/${id}`);
+    const { data } = await api.get<SingleNoteResponse>(`/notes/${id}`);
   
     return {
-      ...data,
-      id: String(data.id),
+      ...data.note,
+      id: String(data.note.id),
     };
   }
 export async function createNote(note: CreateNoteDTO): Promise<Note> {

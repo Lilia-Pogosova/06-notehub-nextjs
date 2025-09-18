@@ -9,6 +9,7 @@ import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import css from "./NotesPage.module.css";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export default function NotesClient() {
     const [page, setPage] = useState(1);
@@ -28,6 +29,7 @@ export default function NotesClient() {
         queryKey: ["notes", page, debouncedSearch],
         queryFn: () => fetchNotes(page, debouncedSearch),
         staleTime: 5000,
+        placeholderData: keepPreviousData,
     });
 
     const notes = data?.notes ?? [];
