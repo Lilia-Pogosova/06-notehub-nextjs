@@ -14,7 +14,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
     const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
     if (token) {
-        config.headers.Authorization = `Bearer ${ token }`;
+        config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 });
@@ -49,13 +49,11 @@ export async function fetchNotes(
 }
 
 export async function fetchNoteById(id: string): Promise<Note> {
-    const { data } = await api.get<SingleNoteResponse>(`/notes/${id}`);
-  
-    return {
-      ...data.note,
-      id: String(data.note.id),
-    };
-  }
+    const { data } = await api.get<Note>(`/notes/${id}`);
+
+    return data;
+}
+
 export async function createNote(note: CreateNoteDTO): Promise<Note> {
     const { data } = await api.post<SingleNoteResponse>("/notes", note);
     return data.note;
